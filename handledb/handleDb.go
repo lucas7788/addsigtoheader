@@ -54,9 +54,8 @@ func AddSigToHeader(dataDir, saveToDir string, accs []*account.Account) error {
 			if err != nil {
 				return fmt.Errorf("GetBlock error %s", err)
 			}
-			hasSig := block.Header.SigData[:]
-			for j := 0; j < len(hasSig); j++ {
-				if bytes.Contains(hasSig[j], sigdata) {
+			for j := 0; j < len(block.Header.SigData); j++ {
+				if bytes.Equal(block.Header.SigData[j], sigdata) {
 					continue
 				}
 			}
