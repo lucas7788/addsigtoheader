@@ -1,7 +1,7 @@
 package main
 
 import (
-	"addsigtoheader/handledb"
+	"github.com/ontio/addsigtoheader/handledb"
 	"fmt"
 	"github.com/ontio/ontology/cmd"
 	"github.com/urfave/cli"
