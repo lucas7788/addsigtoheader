@@ -1,6 +1,7 @@
 package handledb
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/ontio/ontology/account"
 	"github.com/ontio/ontology/core/store/ledgerstore"
@@ -52,6 +53,12 @@ func AddSigToHeader(dataDir,saveToDir string , accs []*account.Account) error {
 			sigdata,err := utils.Sign(blockHash.ToArray(), accs[i])
 			if err !=nil {
 				return  fmt.Errorf("GetBlock error %s", err)
+			}
+			hasSig := block.Header.SigData[:]
+			for j:=0; j< len(hasSig);j++ {
+				if bytes.Contains(hasSig[j], sigdata) {
+					continue
+				}
 			}
 			block.Header.SigData = append(block.Header.SigData, sigdata)
 		}
