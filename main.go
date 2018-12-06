@@ -9,8 +9,6 @@ import (
 	"runtime"
 )
 
-
-
 func setupAPP() *cli.App {
 	app := cli.NewApp()
 	app.Usage = "Ontology Tool"
@@ -33,7 +31,7 @@ func startHandleDb(ctx *cli.Context) error {
 	walletDir := []string{
 		"/Users/sss/gopath/src/github.com/ontio/ontology/wallet.dat",
 	}
-	accs,err := handledb.GetAccounts(ctx, walletDir)
+	accs, err := handledb.GetAccounts(ctx, walletDir)
 	if err != nil {
 		return err
 	}
@@ -44,7 +42,7 @@ func startHandleDb(ctx *cli.Context) error {
 	return nil
 }
 
-func main(){
+func main() {
 	if err := setupAPP().Run(os.Args); err != nil {
 		cmd.PrintErrorMsg(err.Error())
 		os.Exit(1)
