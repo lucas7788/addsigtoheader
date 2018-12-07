@@ -122,6 +122,7 @@ func AddSigToHeader(dataDir, saveToDir string, accsMap map[string]*account.Accou
 		}
 		blockStore2.CommitTo()
 	}
+	blockStore.Close()
 	blockStore2.Close()
 	return nil
 }
