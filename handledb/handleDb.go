@@ -23,8 +23,7 @@ func GetAccounts(ctx *cli.Context, walletDirs []string) ([]*account.Account, err
 		if err != nil {
 			return nil, err
 		}
-		defer common.ClearPasswd(passwd)
-		acc, err := wallet.GetAccountByIndex(0, passwd)
+		acc, err := wallet.GetDefaultAccount(passwd)
 		if err != nil {
 			return nil, err
 		}

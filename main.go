@@ -30,6 +30,7 @@ func startHandleDb(ctx *cli.Context) error {
 	//钱包文件目录
 	walletDir := []string{
 		"/Users/sss/gopath/src/github.com/ontio/ontology/wallet.dat",
+		"/Users/sss/gopath/src/github.com/ontio/ontology/wallet.dat",
 	}
 	accs, err := handledb.GetAccounts(ctx, walletDir)
 	if err != nil {
