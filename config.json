@@ -1,0 +1,20 @@
+{
+  "rawDbDir":"/Users/sss/gopath/src/github.com/ontio/ontology/Chain/ontology",
+  "toDbDir": "/Users/sss/gopath/src/github.com/ontio/ontology/Chain/ontology2",
+  "walletDir": [
+    "/Users/sss/gopath/src/github.com/ontio/ontology/wallet.dat",
+    "/Users/sss/gopath/src/github.com/ontio/ontology/wallet.dat",
+    "/Users/sss/gopath/src/github.com/ontio/ontology/wallet.dat",
+    "/Users/sss/gopath/src/github.com/ontio/ontology/wallet.dat",
+    "/Users/sss/gopath/src/github.com/ontio/ontology/wallet.dat",
+    "/Users/sss/gopath/src/github.com/ontio/ontology/wallet.dat",
+    "/Users/sss/gopath/src/github.com/ontio/ontology/wallet.dat",
+    "/Users/sss/gopath/src/github.com/ontio/ontology/wallet.dat",
+    "/Users/sss/gopath/src/github.com/ontio/ontology/wallet.dat",
+    "/Users/sss/gopath/src/github.com/ontio/ontology/wallet.dat",
+    "/Users/sss/gopath/src/github.com/ontio/ontology/wallet.dat",
+    "/Users/sss/gopath/src/github.com/ontio/ontology/wallet.dat",
+    "/Users/sss/gopath/src/github.com/ontio/ontology/wallet.dat",
+    "/Users/sss/gopath/src/github.com/ontio/ontology/wallet.dat"
+  ]
+}

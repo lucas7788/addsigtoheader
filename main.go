@@ -1,10 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/ontio/addsigtoheader/handledb"
 	"github.com/ontio/ontology/cmd"
 	"github.com/urfave/cli"
+	"io/ioutil"
 	"os"
 	"runtime"
 )
@@ -23,20 +25,24 @@ func setupAPP() *cli.App {
 }
 
 func startHandleDb(ctx *cli.Context) error {
-	//原数据库目录
-	rawDbDir := "/Users/sss/gopath/src/github.com/ontio/ontology/Chain/ontology"
-	//保存到哪个目录
-	toDbDir := "/Users/sss/gopath/src/github.com/ontio/ontology/Chain/ontology2"
-	//钱包文件目录
-	walletDir := []string{
-		"/Users/sss/gopath/src/github.com/ontio/ontology/wallet.dat",
-		"/Users/sss/gopath/src/github.com/ontio/ontology/wallet.dat",
-	}
-	accsMap, err := handledb.GetAccounts(ctx, walletDir)
+
+	data, err := ioutil.ReadFile("./config.json")
 	if err != nil {
 		return err
 	}
-	err = handledb.AddSigToHeader(rawDbDir, toDbDir, accsMap)
+	config := &handledb.Config{}
+	err = json.Unmarshal(data, config)
+	if err != nil {
+		return err
+	}
+	if len(config.WalletDir) != 14 {
+		return fmt.Errorf("wallet file num is wrong")
+	}
+	accsMap, err := handledb.GetAccounts(ctx, config.WalletDir)
+	if err != nil {
+		return err
+	}
+	err = handledb.AddSigToHeader(config.RawDbDir, config.ToDbDir, accsMap)
 	if err != nil {
 		fmt.Println("AddSigToHeader error:", err)
 	}
