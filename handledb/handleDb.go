@@ -107,7 +107,7 @@ func AddSigToHeader(dataDir, saveToDir string, accsMap map[string]*account.Accou
 		for k := 0; k < len(sigAccount); k++ {
 			sigData, err := utils.Sign(blockHash.ToArray(), sigAccount[k])
 			if err != nil {
-				return fmt.Errorf("GetBlock error %s", err)
+				return fmt.Errorf("Sign error %s", err)
 			}
 			accSig = append(accSig, sigData)
 			bookKeepers = append(bookKeepers, sigAccount[k].PublicKey)
