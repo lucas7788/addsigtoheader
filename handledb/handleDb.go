@@ -102,7 +102,7 @@ func AddSigToHeader(dataDir, saveToDir string, accs []*account.Account) error {
 			}
 		}
 		for k := start; k < end; k++ {
-			sigdata, err := utils.Sign(blockHash.ToArray(), accs[i])
+			sigdata, err := utils.Sign(blockHash.ToArray(), accs[k])
 			if err != nil {
 				return fmt.Errorf("GetBlock error %s", err)
 			}

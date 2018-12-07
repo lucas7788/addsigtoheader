@@ -43,7 +43,6 @@ func startHandleDb(ctx *cli.Context) error {
 }
 
 func main() {
-
 	if err := setupAPP().Run(os.Args); err != nil {
 		cmd.PrintErrorMsg(err.Error())
 		os.Exit(1)
