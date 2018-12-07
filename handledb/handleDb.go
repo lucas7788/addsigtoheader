@@ -16,7 +16,7 @@ import (
 
 func GetAccounts(ctx *cli.Context, walletDirs []string) (map[string]*account.Account, error) {
 
-	var accsMap = make(map[string]*account.Account)
+	var accsMap = make(map[string]*account.Account, 0)
 	for i := 0; i < len(walletDirs); i++ {
 		wallet, err := account.Open(walletDirs[i])
 
