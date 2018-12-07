@@ -45,7 +45,7 @@ func isChangePubKey(accs []*account.Account, peerConfigs []*PeerConfig) bool {
 			}
 		}
 	}
-	if samePubNum == 6 {
+	if samePubNum == 7 {
 		return true
 	}
 	return false
