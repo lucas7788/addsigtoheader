@@ -32,22 +32,20 @@ func GetAccounts(ctx *cli.Context, walletDirs []string) ([]*account.Account, err
 	return accs, nil
 }
 
-func isChangePubKey(accs []*account.Account, peerConfigs []*PeerConfig) bool {
-	var samePubNum int = 0
+func getSigAccs(accs []*account.Account, peerConfigs []*PeerConfig) []*account.Account {
+	var sigAccs []*account.Account
+
 	for m:=0; m < len(accs);m++ {
 		pks := keypair.SerializePublicKey(accs[m].PublicKey)
 		pkstr := ccommon.ToHexString(pks)
 		for i:=0;i<len(peerConfigs);i++ {
 			if pkstr == peerConfigs[i].ID {
-				samePubNum++
+				sigAccs = append(sigAccs, accs[m])
 				break
 			}
 		}
 	}
-	if samePubNum == 7 {
-		return true
-	}
-	return false
+	return sigAccs
 }
 func AddSigToHeader(dataDir, saveToDir string, accs []*account.Account) error {
 
@@ -63,15 +61,15 @@ func AddSigToHeader(dataDir, saveToDir string, accs []*account.Account) error {
 	}
 
 	_, blockCurrHeight, err := blockStore.GetCurrentBlock()
+	if err != nil {
+		return err
+	}
 
 	var lastConfigBlockNum uint32 //记录上一个周期的值
 
-	var totalChangeNum int //用来统计变化次数
-
-	var start int = 0  //用来记录从第几个钱包开始追加签名
-	var end int = 7
-
 	var peerConfigs []*PeerConfig
+
+	var sigAccount []*account.Account
 
 	for i := 0; uint32(i) <= blockCurrHeight; i++ {
 		blockHash, err := blockStore.GetBlockHash(uint32(i))
@@ -87,26 +85,28 @@ func AddSigToHeader(dataDir, saveToDir string, accs []*account.Account) error {
         if i == 0 {
 			lastConfigBlockNum = blkInfo.LastConfigBlockNum
 			peerConfigs = blkInfo.NewChainConfig.Peers
+			sigAccount = getSigAccs(accs, peerConfigs)
 		}else {
 			if lastConfigBlockNum != blkInfo.LastConfigBlockNum {
 				lastConfigBlockNum = blkInfo.LastConfigBlockNum
-				//比较公钥是否改变
-				b := isChangePubKey(accs[start:end], peerConfigs)
-				if b {
-					totalChangeNum = totalChangeNum + 1
-					start = 7
-					end = 14
-				}
+				//获得需要签名的account
+				sigAccount = getSigAccs(accs, peerConfigs)
 			}
 		}
+		if len(sigAccount) != 7 {
+			return fmt.Errorf("sigAccount length is not 7 error %s", err)
+		}
 		var accSig [][]byte
-		for k := start; k < end; k++ {
-			sigData, err := utils.Sign(blockHash.ToArray(), accs[k])
+		var bookKeepers []keypair.PublicKey
+		for k := 0; k < len(sigAccount); k++ {
+			sigData, err := utils.Sign(blockHash.ToArray(), sigAccount[k])
 			if err != nil {
 				return fmt.Errorf("GetBlock error %s", err)
 			}
 			accSig = append(accSig, sigData)
+			bookKeepers = append(bookKeepers, sigAccount[k].PublicKey)
 		}
+		block.Header.Bookkeepers = bookKeepers
 		block.Header.SigData = accSig
 		blockStore2.NewBatch()
 		err = blockStore2.SaveBlock(block)
