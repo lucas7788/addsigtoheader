@@ -1,17 +1,16 @@
 package handledb
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/ontio/ontology-crypto/keypair"
 	"github.com/ontio/ontology/account"
 	"github.com/ontio/ontology/cmd/common"
 	"github.com/ontio/ontology/cmd/utils"
+	ccommon "github.com/ontio/ontology/common"
 	. "github.com/ontio/ontology/consensus/vbft/config"
 	"github.com/ontio/ontology/core/store/ledgerstore"
 	"github.com/urfave/cli"
-	ccommon "github.com/ontio/ontology/common"
 	"os"
 )
 
@@ -101,18 +100,15 @@ func AddSigToHeader(dataDir, saveToDir string, accs []*account.Account) error {
 				}
 			}
 		}
+		var accSig [][]byte
 		for k := start; k < end; k++ {
-			sigdata, err := utils.Sign(blockHash.ToArray(), accs[k])
+			sigData, err := utils.Sign(blockHash.ToArray(), accs[k])
 			if err != nil {
 				return fmt.Errorf("GetBlock error %s", err)
 			}
-			for j := 0; j < len(block.Header.SigData); j++ {
-				if bytes.Equal(block.Header.SigData[j], sigdata) {
-					continue
-				}
-			}
-			block.Header.SigData = append(block.Header.SigData, sigdata)
+			accSig = append(accSig, sigData)
 		}
+		block.Header.SigData = accSig
 		blockStore2.NewBatch()
 		err = blockStore2.SaveBlock(block)
 		if err != nil {
