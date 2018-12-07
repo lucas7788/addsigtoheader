@@ -14,8 +14,9 @@ import (
 	"os"
 )
 
-func GetAccounts(ctx *cli.Context, walletDirs []string) ([]*account.Account, error) {
-	var accs []*account.Account
+func GetAccounts(ctx *cli.Context, walletDirs []string) (map[string]*account.Account, error) {
+
+	var accsMap = make(map[string]*account.Account)
 	for i := 0; i < len(walletDirs); i++ {
 		wallet, err := account.Open(walletDirs[i])
 
@@ -27,27 +28,26 @@ func GetAccounts(ctx *cli.Context, walletDirs []string) ([]*account.Account, err
 		if err != nil {
 			return nil, err
 		}
-		accs = append(accs, acc)
+		pubkey := keypair.SerializePublicKey(acc.PublicKey)
+		pubkeyStr := ccommon.ToHexString(pubkey)
+		accsMap[pubkeyStr] = acc
 	}
-	return accs, nil
+	return accsMap, nil
 }
 
-func getSigAccs(accs []*account.Account, peerConfigs []*PeerConfig) []*account.Account {
+func getSigAccs(accsMap map[string]*account.Account, peerConfigs []*PeerConfig) ([]*account.Account, error) {
+
 	var sigAccs []*account.Account
-
-	for m:=0; m < len(accs);m++ {
-		pks := keypair.SerializePublicKey(accs[m].PublicKey)
-		pkstr := ccommon.ToHexString(pks)
-		for i:=0;i<len(peerConfigs);i++ {
-			if pkstr == peerConfigs[i].ID {
-				sigAccs = append(sigAccs, accs[m])
-				break
-			}
+	for i:=0;i<len(peerConfigs);i++ {
+		acc := accsMap[peerConfigs[i].ID]
+		if acc == nil {
+			return nil,fmt.Errorf("no pubkey  error %s",peerConfigs[i].ID)
 		}
+		sigAccs = append(sigAccs, acc)
 	}
-	return sigAccs
+	return sigAccs,nil
 }
-func AddSigToHeader(dataDir, saveToDir string, accs []*account.Account) error {
+func AddSigToHeader(dataDir, saveToDir string, accsMap map[string]*account.Account) error {
 
 	blockStore, err := ledgerstore.NewBlockStore(fmt.Sprintf("%s%s%s", dataDir, string(os.PathSeparator), ledgerstore.DBDirBlock), true)
 
@@ -85,12 +85,18 @@ func AddSigToHeader(dataDir, saveToDir string, accs []*account.Account) error {
         if i == 0 {
 			lastConfigBlockNum = blkInfo.LastConfigBlockNum
 			peerConfigs = blkInfo.NewChainConfig.Peers
-			sigAccount = getSigAccs(accs, peerConfigs)
+			sigAccount,err = getSigAccs(accsMap, peerConfigs)
+			if err != nil {
+				return err
+			}
 		}else {
 			if lastConfigBlockNum != blkInfo.LastConfigBlockNum {
 				lastConfigBlockNum = blkInfo.LastConfigBlockNum
 				//获得需要签名的account
-				sigAccount = getSigAccs(accs, peerConfigs)
+				sigAccount,err = getSigAccs(accsMap, peerConfigs)
+				if err != nil {
+					return nil
+				}
 			}
 		}
 		if len(sigAccount) != 7 {

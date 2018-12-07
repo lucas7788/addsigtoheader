@@ -32,11 +32,11 @@ func startHandleDb(ctx *cli.Context) error {
 		"/Users/sss/gopath/src/github.com/ontio/ontology/wallet.dat",
 		"/Users/sss/gopath/src/github.com/ontio/ontology/wallet.dat",
 	}
-	accs, err := handledb.GetAccounts(ctx, walletDir)
+	accsMap, err := handledb.GetAccounts(ctx, walletDir)
 	if err != nil {
 		return err
 	}
-	err = handledb.AddSigToHeader(rawDbDir, toDbDir, accs)
+	err = handledb.AddSigToHeader(rawDbDir, toDbDir, accsMap)
 	if err != nil {
 		fmt.Println("AddSigToHeader error:", err)
 	}
