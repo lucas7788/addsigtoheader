@@ -67,8 +67,6 @@ func AddSigToHeader(dataDir, saveToDir string, accsMap map[string]*account.Accou
 
 	var lastConfigBlockNum uint32 //记录上一个周期的值
 
-	var peerConfigs []*PeerConfig
-
 	var sigAccount []*account.Account
 
 	for i := 0; uint32(i) <= blockCurrHeight; i++ {
@@ -84,8 +82,7 @@ func AddSigToHeader(dataDir, saveToDir string, accsMap map[string]*account.Accou
 		}
         if i == 0 {
 			lastConfigBlockNum = blkInfo.LastConfigBlockNum
-			peerConfigs = blkInfo.NewChainConfig.Peers
-			sigAccount,err = getSigAccs(accsMap, peerConfigs)
+			sigAccount,err = getSigAccs(accsMap, blkInfo.NewChainConfig.Peers)
 			if err != nil {
 				return err
 			}
@@ -93,7 +90,7 @@ func AddSigToHeader(dataDir, saveToDir string, accsMap map[string]*account.Accou
 			if lastConfigBlockNum != blkInfo.LastConfigBlockNum {
 				lastConfigBlockNum = blkInfo.LastConfigBlockNum
 				//获得需要签名的account
-				sigAccount,err = getSigAccs(accsMap, peerConfigs)
+				sigAccount,err = getSigAccs(accsMap, blkInfo.NewChainConfig.Peers)
 				if err != nil {
 					return nil
 				}
