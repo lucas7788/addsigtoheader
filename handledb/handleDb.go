@@ -37,7 +37,7 @@ func GetAccounts(ctx *cli.Context, walletDirs []string) (map[string]*account.Acc
 
 func getSigAccs(accsMap map[string]*account.Account, peerConfigs []*PeerConfig) ([]*account.Account, error) {
 
-	var sigAccs []*account.Account
+	var sigAccs = make([]*account.Account, 0)
 	for i:=0;i<len(peerConfigs);i++ {
 		acc := accsMap[peerConfigs[i].ID]
 		if acc == nil {
@@ -67,7 +67,12 @@ func AddSigToHeader(dataDir, saveToDir string, accsMap map[string]*account.Accou
 
 	var lastConfigBlockNum uint32 //记录上一个周期的值
 
-	var sigAccount []*account.Account
+	var sigAccount = make([]*account.Account, 0)
+
+	var lastConfigBlockNumChange = 0
+
+	fmt.Println("GetCurrentBlock:", blockCurrHeight)
+
 
 	for i := 0; uint32(i) <= blockCurrHeight; i++ {
 		blockHash, err := blockStore.GetBlockHash(uint32(i))
@@ -75,32 +80,40 @@ func AddSigToHeader(dataDir, saveToDir string, accsMap map[string]*account.Accou
 			return fmt.Errorf("GetBlockHash error %s", err)
 		}
 		block, err := blockStore.GetBlock(blockHash)
+		if err != nil {
+			return fmt.Errorf("GetBlock error %s, blockHash:%s", err, blockHash)
+		}
 
 		blkInfo := &VbftBlockInfo{}
 		if err := json.Unmarshal(block.Header.ConsensusPayload, blkInfo); err != nil {
 			return fmt.Errorf("unmarshal blockInfo: %s", err)
 		}
-        if i == 0 {
+		if i == 0 {
 			lastConfigBlockNum = blkInfo.LastConfigBlockNum
 			sigAccount,err = getSigAccs(accsMap, blkInfo.NewChainConfig.Peers)
 			if err != nil {
-				return err
+				return fmt.Errorf("getSigAccs: %s", err)
 			}
+			continue
+		}
+        if i == 1 {
+			lastConfigBlockNum = blkInfo.LastConfigBlockNum
 		}else {
 			if lastConfigBlockNum != blkInfo.LastConfigBlockNum {
+				lastConfigBlockNumChange++
 				lastConfigBlockNum = blkInfo.LastConfigBlockNum
 				//获得需要签名的account
 				sigAccount,err = getSigAccs(accsMap, blkInfo.NewChainConfig.Peers)
 				if err != nil {
-					return nil
+					return fmt.Errorf("i>0, getSigAccs: %s", err)
 				}
 			}
 		}
 		if len(sigAccount) != 7 {
-			return fmt.Errorf("sigAccount length is not 7 error %s", err)
+			return fmt.Errorf("sigAccount length is not 7 error")
 		}
-		var accSig [][]byte
-		var bookKeepers []keypair.PublicKey
+		var accSig = make([][]byte, 0)
+		var bookKeepers = make([]keypair.PublicKey, 0)
 		for k := 0; k < len(sigAccount); k++ {
 			sigData, err := utils.Sign(blockHash.ToArray(), sigAccount[k])
 			if err != nil {
@@ -109,6 +122,7 @@ func AddSigToHeader(dataDir, saveToDir string, accsMap map[string]*account.Accou
 			accSig = append(accSig, sigData)
 			bookKeepers = append(bookKeepers, sigAccount[k].PublicKey)
 		}
+		fmt.Println(fmt.Sprintf("blockHeight: %d, before: %d, after: %d", i, len(block.Header.SigData), len(accSig)))
 		block.Header.Bookkeepers = bookKeepers
 		block.Header.SigData = accSig
 		blockStore2.NewBatch()
@@ -119,6 +133,7 @@ func AddSigToHeader(dataDir, saveToDir string, accsMap map[string]*account.Accou
 		}
 		blockStore2.CommitTo()
 	}
+	fmt.Println("lastConfigBlockNumChange:", lastConfigBlockNumChange)
 	blockStore.Close()
 	blockStore2.Close()
 	return nil

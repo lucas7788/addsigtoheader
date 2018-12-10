@@ -35,9 +35,9 @@ func startHandleDb(ctx *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	if len(config.WalletDir) != 14 {
-		return fmt.Errorf("wallet file num is wrong")
-	}
+	//if len(config.WalletDir) != 14 {
+	//	return fmt.Errorf("wallet file num is wrong")
+	//}
 	accsMap, err := handledb.GetAccounts(ctx, config.WalletDir)
 	if err != nil {
 		return err
