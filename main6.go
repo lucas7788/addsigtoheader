@@ -81,7 +81,7 @@ func restStudy() {
 	}
 	var w *sync.WaitGroup
 	w = new(sync.WaitGroup)
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 5000; i++ {
 		w.Add(1)
 		go func(i int) {
 			defer w.Done()
@@ -92,6 +92,7 @@ func restStudy() {
 			defer resp.Body.Close()
 			fmt.Println(i)
 			num.Add1()
+			return
 			//data, err := ioutil.ReadAll(resp.Body)
 			//if err != nil {
 			//	return
